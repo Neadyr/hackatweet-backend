@@ -51,7 +51,7 @@ router.post('/signin', (req, res) => {
   });
 });
 
-router.get('/canDelete/:token', (req, res) => {
+router.get('/:token', (req, res) => {
   User.findOne({ token: req.params.token }).then(data => {
     if (data) {
       res.json({ result: true, canDelete: data.canDelete });

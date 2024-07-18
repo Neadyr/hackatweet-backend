@@ -7,7 +7,6 @@ const Hashtag = require('../models/hashtags');
 const User = require('../models/users');
 
 const checkForHashTags = (findHashtag, tweet, newTweet , tweetId) => {
-    console.log(tweetId);
     if (findHashtag !== null) {
         for (const element of findHashtag) {
             Hashtag.find({ hashtag : element })
@@ -24,7 +23,6 @@ const checkForHashTags = (findHashtag, tweet, newTweet , tweetId) => {
                     { $push : {tweets: tweetId}})
                     .then(() => {
                         Hashtag.find().then(() => {
-                          console.log("Hashtags updated");
                         });
                     })
                 }
@@ -46,7 +44,6 @@ router.post('/', (req, res) => {
     } else {
         User.findOne({token: req.body.token})
         .then(data => {
-            console.log(data._id);
             if (data !== null) {
                 const newTweet = new Tweet ({
             user: data._id,
@@ -71,21 +68,66 @@ router.get('/', (req, res) => {
     Tweet.find()
     .populate('user')
     .then(data => {
-        console.log(data[0].user.firstName)
-        const properData = {
-            firstName: data[0].user.firstName,
-            userName: data[0].user.userName,
-            tweet: data[0].tweet,
-            creationDate: data[0].creationDate,
-            likes: data[0].like
+        if (data) {
+            console.log(data)
+            const properData = {
+                firstName: data[0].user.firstName,
+                userName: data[0].user.userName,
+                tweet: data[0].tweet,
+                creationDate: data[0].creationDate,
+                likes: data[0].like
+            }
+    
+            res.json({properData})
+        } else {
+            res.json({result: false, message : "no tweet to find"})
         }
-
-        res.json(properData)
     })
 })
 
 router.delete('/', (req, res) => {
-    Tweet.deleteOne({tweet : req.body.tweet})
+    User.findOne({ token: req.body.token }).then(data => {
+        if (data) {
+            Tweet.findOne({tweet : req.body.tweet})
+            .then((data) => {
+                const pattern = /#\S+/gi;
+                const tweet = data.tweet
+                const findHashtag = tweet.match(pattern)
+                console.log(findHashtag);
+                if (findHashtag !== null) {
+                    for (const element of findHashtag) {
+                        Hashtag.updateOne(
+                        { hashtag : element },
+                        { $pull : {tweets: data._id}})
+                            .then(() => {
+                                
+                            })
+                    // .then(() => {
+                    //     Hashtag.find().then((data) => {
+                    //         if (data.tweets.length = 0) {
+                    //             Hashtag.deleteOne({hashtag: data.hashtag})
+                    //         }
+                    //     });
+                    // })
+                    }
+
+                }
+
+            })
+
+            Tweet.deleteOne({tweet : req.body.tweet})
+            .then((data) => {
+                if (data.deletedCount === 0) {
+                    res.json({result : false, message : 'No tweet to delete'})
+                } else {
+                    res.json({result : true, message : 'Tweet deleted'})
+                }
+                })  
+            } else {
+                res.json({ result: false, error: 'User not found' });
+            }
+      });
+
 })
 
 module.exports = router;
