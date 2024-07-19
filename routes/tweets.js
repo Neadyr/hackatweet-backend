@@ -108,13 +108,13 @@ router.get('/', (req, res) => {
     .then(data => {
         if (data) {
             let properData = []
-            for (const elem in data) {
+            for (const elem of data) {
                 const newTweet = {
-                firstName: data[elem].user.firstName,
-                userName: data[elem].user.userName,
-                tweet: data[elem].tweet,
-                creationDate: data[elem].creationDate,
-                likes: data[elem].likes
+                firstName: elem.user.firstName,
+                userName: elem.user.userName,
+                tweet: elem.tweet,
+                creationDate: elem.creationDate,
+                likes: elem.likes
             }
             properData.push(newTweet)
             }
