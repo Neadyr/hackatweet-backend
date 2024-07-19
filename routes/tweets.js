@@ -1,3 +1,4 @@
+const moment = require ('moment');
 var express = require('express');
 var router = express.Router();
 
@@ -5,6 +6,7 @@ require('../models/connection');
 const Tweet = require('../models/tweets');
 const Hashtag = require('../models/hashtags');
 const User = require('../models/users');
+
 
 const checkForHashTags = (findHashtag, tweet, newTweet , tweetId) => {
     if (findHashtag !== null) {
@@ -109,11 +111,13 @@ router.get('/', (req, res) => {
         if (data) {
             let properData = []
             for (const elem of data) {
+                const dateFromCreation = moment(elem.creationDate).fromNow()
+
                 const newTweet = {
                 firstName: elem.user.firstName,
                 userName: elem.user.userName,
                 tweet: elem.tweet,
-                creationDate: elem.creationDate,
+                creationDate: dateFromCreation,
                 likes: elem.likes
             }
             properData.push(newTweet)
