@@ -107,13 +107,18 @@ router.get('/', (req, res) => {
     .populate('user')
     .then(data => {
         if (data) {
-            const properData = {
+            let properData = []
+            for (const elem in data) {
+                const elem = {
                 firstName: data[0].user.firstName,
                 userName: data[0].user.userName,
                 tweet: data[0].tweet,
                 creationDate: data[0].creationDate,
-                likes: data[0].like
+                likes: data[0].likes
             }
+            properData.push(elem)
+            }
+
             res.json({result: true, properData})
         } else {
             res.json({result: false, message : "no tweet to find"})
