@@ -32,6 +32,44 @@ const checkForHashTags = (findHashtag, tweet, newTweet , tweetId) => {
     return {result : true, message : "Tweet sent, hashtags have been updated", newTweet}
 }
 
+router.put('/', (req, res) => {
+    let user;
+    User.findOne({token: req.body.token})
+        .then(data => {
+            if (data !== null) {
+                user = data
+                Tweet.findOne({tweet : req.body.tweet})
+                .then(data => {
+                    let tempArray = data.likes
+                    if (tempArray.length < 1) {
+                        console.log('array was empty');
+                        Tweet.updateOne({tweet : req.body.tweet}, { $push : {likes: user._id}})
+                        .then(()=> {
+                            res.json({result : true, message: "Tweet liked"})
+                        })
+
+                    } else {
+                        console.log('array has at least an element');
+                        console.log('element :', tempArray[0], 'user' , user._id)
+                        if (tempArray.some((e) => e.equals(user._id))) {
+                            Tweet.updateOne({tweet : req.body.tweet}, { $pull : {likes: user._id}})
+                            .then(()=> {
+                            res.json({result : true, message: "Tweet unliked"})
+                            })
+                        } else {
+                            Tweet.updateOne({tweet : req.body.tweet}, { $push : {likes: user._id}})
+                            .then(()=> {
+                            res.json({result : true, message: "Tweet liked"})
+                            })
+                        }  
+                    }
+
+                })
+        } else {
+            res.json({result : false, error: "Missing identification token"})
+        }
+    })
+})
 
 router.post('/', (req, res) => {
     const pattern = /#\S+/gi;
@@ -69,7 +107,6 @@ router.get('/', (req, res) => {
     .populate('user')
     .then(data => {
         if (data) {
-            console.log(data)
             const properData = {
                 firstName: data[0].user.firstName,
                 userName: data[0].user.userName,
@@ -77,8 +114,7 @@ router.get('/', (req, res) => {
                 creationDate: data[0].creationDate,
                 likes: data[0].like
             }
-    
-            res.json({properData})
+            res.json({result: true, properData})
         } else {
             res.json({result: false, message : "no tweet to find"})
         }
@@ -93,7 +129,6 @@ router.delete('/', (req, res) => {
                 const pattern = /#\S+/gi;
                 const tweet = data.tweet
                 const findHashtag = tweet.match(pattern)
-                console.log(findHashtag);
                 if (findHashtag !== null) {
                     for (const element of findHashtag) {
                         Hashtag.updateOne(
@@ -102,13 +137,6 @@ router.delete('/', (req, res) => {
                             .then(() => {
                                 
                             })
-                    // .then(() => {
-                    //     Hashtag.find().then((data) => {
-                    //         if (data.tweets.length = 0) {
-                    //             Hashtag.deleteOne({hashtag: data.hashtag})
-                    //         }
-                    //     });
-                    // })
                     }
 
                 }
