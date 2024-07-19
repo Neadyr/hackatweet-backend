@@ -109,14 +109,14 @@ router.get('/', (req, res) => {
         if (data) {
             let properData = []
             for (const elem in data) {
-                const elem = {
-                firstName: data[0].user.firstName,
-                userName: data[0].user.userName,
-                tweet: data[0].tweet,
-                creationDate: data[0].creationDate,
-                likes: data[0].likes
+                const newTweet = {
+                firstName: data[elem].user.firstName,
+                userName: data[elem].user.userName,
+                tweet: data[elem].tweet,
+                creationDate: data[elem].creationDate,
+                likes: data[elem].likes
             }
-            properData.push(elem)
+            properData.push(newTweet)
             }
 
             res.json({result: true, properData})
